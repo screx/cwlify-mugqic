@@ -1,0 +1,15 @@
+path_to_trimmomatic:
+  class: File
+  path: trimmomatic-0.36.jar
+paired_end: true
+phred33: true
+input_forward: 
+  class: File
+  path: pair1.fastq
+input_reverse:
+  class: File
+  path: pair2.fastq
+leading: 3
+trailing: 3
+sliding_window: 4:15
+min_len: 36

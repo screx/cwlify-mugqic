@@ -1,0 +1,21 @@
+path_to_picard:
+  class: File
+  path: picard.jar
+path_to_trimmomatic:
+  class: File
+  path: trimmomatic-0.36.jar
+sam_files:
+  class: File
+  path: chrom20_low_cov.bam
+reference_genome:
+  class: File
+  path: ref.fa
+bwa_mem_thread: 2
+bwa_mem_mark_shorter: true
+bwa_mem_hard_clipping: true
+bwa_paired_end_mode: true
+trimmomatic_trailing: 3
+trimmomatic_min_len: 36
+trimmomatic_sliding_window: 4:15
+sort_sam_sort_order: coordinate
+

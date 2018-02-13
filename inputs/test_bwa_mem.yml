@@ -1,0 +1,11 @@
+reference: 
+  class: File
+  path: ref.fa
+reads: 
+  class: File
+  path: pair1_f_pair.fastq
+threads: 3
+mark_shorter: true
+hard_clipping: true
+paired_end_mode: true
+
