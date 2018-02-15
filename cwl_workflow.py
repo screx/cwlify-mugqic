@@ -1,9 +1,13 @@
-#!/usr/bin/ python
+#!/usr/bin/ pythonm
 
 #TODO write docstrings
 
 # trying to develop a tool that allows users to generate workflows
 # add something to core_config
+
+# steps are added
+# then create_workflow is ran
+
 
 class Workflow:
 	def __init__(self):
@@ -18,6 +22,7 @@ class Workflow:
 		steps[cl_tool.toolname]["in"] = cl_tool.get_valid_inputs()
 		steps[cl_tool.toolname]["out"] = cl_tool.get_valid_outputs()
 		# what do you do if there are two of the same toolname?
+
 	def create_workflow(self):
 		cwl = open(filename + ".cwl", "rw")
 		yaml = open(filename + ".yml", "rw")
@@ -42,6 +47,7 @@ class Workflow:
 			'steps': steps,
 			'requirements': requirements
 		}
+		
 		return workflow
 
 	def build_inputs(self):
@@ -81,21 +87,22 @@ class Workflow:
 			for param in self.steps[tool]["in"]:
 				if isinstance(self.steps[tool]["in"][param]["value"], dict):			
 					# chain type i.e. no need for a value in inputs
-					source = "{toolname}_{parametername}".format(tool, j)
-					cwl_steps[tool][param] = source
-				else:
 					pass
+				else:
+					cwl_steps[tool][param] = source
+					source = "{toolname}_{parametername}".format(tool, j)
+					
 			for param in self.steps[tool]["out"]:
-				out += [param]
+				cwl_steps[toolname]['out'] += [param]
 		return cwl_steps
 
 	def build_outputs(self):
-		outputs = {"out": []}
+		outputs = {"outputs": []}
 		steps = self.steps
-		for tool in steps:
-			curstep = self.steps["out"]
-			for param in curstep:
-				outputs["out"] = param
+		# for tool in steps:
+		# 	curstep = self.steps["out"]
+		# 	for param in curstep:
+		# 		outputs["out"] = param
 
 
 
@@ -127,3 +134,17 @@ class Workflow:
 	# the pipeline has methods/functions to get data from the config and readme files
 	# also to select inputs based on priority
 	# need to also hard code some params in.
+
+	# we know we're building a queue
+	# put all steps in an array. if a step previous step is there that can be chained-- then modify the output and input
+	# all leftover things in out should be put in outputs.
+	# if prevstep in steps:
+	# 	
+	# what other ways can i do this. Sometimes I don't want to collect all outputs and only up to a certain step....
+	# if its chained, I don't want it
+	# if it's terminal I /sometimes/ want it. 
+	# hmmmmmmmmmmmmm.....
+	# not rly sure what to do here.
+
+	# to interact with the pipeline just make an argparse command that switches things to the CWL versions. override [Mugqic] with [MugqicCWl] 
+	# 
