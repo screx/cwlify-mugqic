@@ -33,7 +33,7 @@ inputs:
       position: 4
   off_diagonal_x_dropoff:
     type: int?
-    label: off-diagonal x-dropoff(z-dropoff)
+    label: off-diagonal x-dropoff(z-dropoff)cwl
     inputBinding:
       prefix: -d 
       separate: true
@@ -160,11 +160,15 @@ inputs:
       - .bwt
       - .pac
       - .sa
-  reads:
+  fastq1:
     type: File
     inputBinding:
       position: 18
-      
+  fastq2
+    type: File?
+    inputBinding:
+      position: 19
+
 outputs:
   aligned_sam:
     type: stdout

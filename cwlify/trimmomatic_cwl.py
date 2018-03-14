@@ -91,3 +91,5 @@ class MUGQICtoCWL:
 		return
 		# need to refactor eventually
 		# but have this then add it to the workflow
+
+# essentially I would have to map the function args to the input manually for each tool.

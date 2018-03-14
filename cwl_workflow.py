@@ -97,12 +97,18 @@ class Workflow:
 		return cwl_steps
 
 	def build_outputs(self):
-		outputs = {"outputs": []}
-		steps = self.steps
+		outputs = self.outputs
+		for i in outputs:
+			outputs[i]["type"] 
+			outputs[i]["value"]
+			outputs[i][""] 
+
 		# for tool in steps:
 		# 	curstep = self.steps["out"]
 		# 	for param in curstep:
 		# 		outputs["out"] = param
+	def add_outputs(self, input, output):
+		# this should be done after a step is added
 
 
 
@@ -147,4 +153,5 @@ class Workflow:
 	# not rly sure what to do here.
 
 	# to interact with the pipeline just make an argparse command that switches things to the CWL versions. override [Mugqic] with [MugqicCWl] 
-	# 
+
+	

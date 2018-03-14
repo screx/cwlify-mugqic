@@ -1,0 +1,4 @@
+trimmomatic_paired_end: '#PLACEHOLDER'
+trimmomatic_path:
+  class: File
+  path: '#PLACEHOLDER'

@@ -2,3 +2,4 @@
 *.jar
 *.sam*
 *.bam*
+venv/*
