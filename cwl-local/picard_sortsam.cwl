@@ -3,37 +3,34 @@ class: CommandLineTool
 baseCommand: [java, -jar]
 
 inputs:
-  bvatools:
+  path_to_picard:
     type: [File, string]
     inputBinding:
       position: 1
-  groupfixmate:
+  sortSam:
     type: string
-    default: groupfixmate
-    inputBinding: 
-      position: 2
-  level:
-    type: int
+    default: SortSam
     inputBinding:
-      prefix: --level
-      separate: true
-      position: 3
-  bam:
+      position: 2
+  sam:
     type: File
     inputBinding:
-      prefix: --bam
-      separate: true
-      position: 4
+      prefix: I=
+      separate: false
+      position: 3
   output_filename:
     type: string
     inputBinding:
-      prefix: --out
-      separate: true
+      position: 4
+      prefix: O=
+  sort_order:
+    type: string
+    inputBinding:
       position: 5
-
+      prefix: SORT_ORDER= 
+    default: coordinate
 outputs:
-  groupfixmate:
+  sorted:
     type: File
     outputBinding:
-      glob: $(inputs.output_filename)
-
+      glob: *

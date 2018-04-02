@@ -1,4 +1,7 @@
 import yaml
+import os
+from shutil import copyfile
+dirname = "run"
 class Workflow:
 	def __init__(self, name):
 		self.cwl_version = "v1.0"
@@ -10,6 +13,7 @@ class Workflow:
 		self.outputs = {}
 		self.values = {}
 		self.build_base()
+		self.create_run_folder()
 
 	def __getattr__(self, attr):
 		for i in self.steps:
@@ -27,7 +31,31 @@ class Workflow:
 			"StepInputExpressionRequirement": {}
 			},
 		}
+	# need to put this in a loop
+	def create_run_folder(self):
+		base_dir = self.name
+		self.dirname = base_dir
+		i = 0
+		while True:
+			try:
+				os.mkdir(self.dirname)
+				break
+			except:
+				i += 1
+				self.dirname = base_dir  + str(i)
+		os.mkdir(self.dirname+"/cwl")
 
+	def add_to_run_folder(self, name, path):
+		# returns True if it worked, False if it didn't.
+		try:
+			os.stat(path)
+			copyfile(path, self.dirname+"/cwl/"+name+".cwl")
+			new_path = "cwl/"+name+".cwl"
+			return new_path
+		except os.error:
+			return False
+
+	
 
 	def add_step(self, toolname, cwl_file, inputs, outputs, scatter=None):
 		''' 
@@ -45,65 +73,87 @@ class Workflow:
 			"in": inputs,
 			"out": outputs,
 		}
+		steps = self.steps
 		if scatter:
-			steps[toolname]["requirements"]  += "ScatterFeatureRequirement"
+			if "requirements" in steps[toolname] and "ScatterFeatureRequirement" not in steps[toolname]["requirements"]:
+				steps[toolname]["requirements"]  += ["ScatterFeatureRequirement"]
+			else:
+				steps[toolname]["requirements"] = ["ScatterFeatureRequirement"]
 			for i in scatter:
 				steps[toolname]["scatter"] = []
 				steps[toolname]["scatter"] += [i]
 		return self.steps[toolname]
 
-	def add_input(self, toolname, **kwargs):
+	def add_input(self, toolname, input_name, input_type):
 		'''
 		for simplicities sake the gmail.cominputs will be added to the dict will be
 		in the form toolname_inputname. This can be changed later.
 		'''
-		for key, value in kwargs.items():
-			new_key = "{toolname}_{key}".format(toolname=toolname, key=key)
-			self.input_names += [new_key]
-			self.inputs[new_key] = value
+		new_key = "{toolname}_{key}".format(toolname=toolname, key=input_name)
+		self.input_names += [new_key]
+		self.inputs[new_key] = {
+			"type": input_type
+		}
 
 	def add_outputs(self, **kwargs):
+		# add the outputs to a dict
 		for key, value in kwargs.items():
+			value["type"] = "File"
 			self.outputs[key] = value
 			self.output_names += [key]
 
 	def build(self):
-		fname = "{}.cwl".format(self.name)
+		# build will actually create the workflow file.
+		fname = "workflow.cwl"
 		steps = {"steps": self.steps}
 		inputs = {"inputs": self.inputs}
 		outputs = {"outputs": self.outputs}
-		with open(fname, "w") as wf:
+		with open(self.dirname+"/"+fname, "w") as wf:
 			yaml.dump(self.base, wf, default_flow_style=False)
 			yaml.dump(inputs, wf, default_flow_style=False) 
 			yaml.dump(outputs, wf, default_flow_style=False) 
 			yaml.dump(steps, wf, default_flow_style=False) 
 
-	def add_values(self, type, inputname, value, secondary_files=None):
-		if inputname in self.input_names:
+	def add_values(self, toolname, **kwargs):
+		'''
+		e.g.
+		inputname: {
+			type: #sometype
+			value: #the value associated
+		}
+		'''
+		for i in kwargs:
+			value = kwargs[i] 
+			key = i
+			input_type = value["type"]
+			input_name = key
+			self.add_input(toolname, input_name, input_type)
 			set_value = None
-			if type == "File":
+			if input_type == "File":
 				set_value = {
 					"class": "File",
-					"path": value
+					"path": value["value"]
 				}
-				if secondary_files:
-					set_value["secondaryFiles"] = secondary_file
+				if "secondary_files" in value:
+					set_value["secondaryFiles"] = value["secondary_file"]
 			else:
-				set_value = value
-			self.values[inputname] = set_value
+				set_value = value["value"] # works for string, boolean, int.
+			self.values[toolname +"_"+input_name] = set_value
 			return True
-		else:
-			return False
+			# return True if successfully added, false otherwise.
+
 
 
 	def create_cwl_inputs(self):
 		'''
 		to be used only after build has been successfully ran
 		'''
+		print self.values
 		inputs = {}
-		with open(self.name+"-inputs.yml", "w") as inp:
+		with open(self.dirname+"/"+"inputs.yml", "w") as inp:
 			for i in self.input_names:
 				if i in self.values:
+					print(self.values[i])
 					inputs[i] = self.values[i]
 				else:
 					if self.inputs[i]["type"] == "File":

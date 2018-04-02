@@ -164,7 +164,7 @@ inputs:
     type: File
     inputBinding:
       position: 18
-  fastq2
+  fastq2:
     type: File?
     inputBinding:
       position: 19

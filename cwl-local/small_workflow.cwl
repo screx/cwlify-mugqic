@@ -10,12 +10,12 @@ inputs:
     type: File
   reference_genome:
     type: File
-    secondaryFiles:
-      - ^.fa.ann
-      - ^.fa.amb
-      - ^.fa.bwt
-      - ^.fa.pac
-      - ^.fa.sa
+    # secondaryFiles:
+    #   - ^.fa.ann
+    #   - ^.fa.amb
+    #   - ^.fa.bwt
+    #   - ^.fa.pac
+    #   - ^.fa.sa
   bwa_mem_thread:
     type: int 
   bwa_mem_mark_shorter:
@@ -42,12 +42,12 @@ steps:
     run: picard_sam_to_fastq.cwl
     in:
       path_to_picard: path_to_picard
-      INPUT: sam_files
-      FASTQ: 
+      input: sam_files
+      fastq: 
         default: 1.fastq
-      SECOND_END_FASTQ:  
+      fastq2:  
         default: 2.fastq
-    out: [fastq, fastq2]
+    out: [out1, out2]
   trimmomatic:
     requirements:
       InlineJavascriptRequirement: {}

@@ -1,15 +1,15 @@
 path_to_picard:
   class: File
-  path: picard.jar
+  path: ../picard.jar
 path_to_trimmomatic:
   class: File
-  path: trimmomatic-0.36.jar
+  path: ../trimmomatic-0.36.jar
 sam_files:
   class: File
-  path: chrom20_low_cov.bam
+  path: ../chrom20_low_cov.bam
 reference_genome:
   class: File
-  path: ref.fa
+  path: ../ref.fa
 bwa_mem_thread: 2
 bwa_mem_mark_shorter: true
 bwa_mem_hard_clipping: true
