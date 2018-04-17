@@ -1,6 +1,10 @@
 import yaml
 import os
 from shutil import copyfile
+from cwltool.load_tool import validate_document, fetch_document
+import tempfile
+from schema_salad.validate import ValidationException
+
 dirname = "run"
 class Workflow:
 	def __init__(self, name):
@@ -48,22 +52,22 @@ class Workflow:
 	def add_to_run_folder(self, name, path):
 		# returns True if it worked, False if it didn't.
 		try:
+			new_path = os.path.abspath(self.dirname)+"/cwl/"+name+".cwl"
 			os.stat(path)
-			copyfile(path, self.dirname+"/cwl/"+name+".cwl")
-			new_path = "cwl/"+name+".cwl"
+			copyfile(path, new_path)
 			return new_path
 		except os.error:
 			return False
 
 	
 
-	def add_step(self, toolname, cwl_file, inputs, outputs, scatter=None):
+	def add_step(self, toolname, cwl_file, inputs, outputs, scatter=None, reqs=None):
 		''' 
 		 toolname is a string
 		 cwl_file is a string
 		 inputs is a dict of the following form
 		 inputs = {
-		 	'inputname': 'source'
+			'inputname': 'source'
 		 }
 		 outputs is an array of strings
 		'''
@@ -74,11 +78,16 @@ class Workflow:
 			"out": outputs,
 		}
 		steps = self.steps
+		if reqs:
+			steps[toolname]["requirements"] = [reqs]
+
 		if scatter:
 			if "requirements" in steps[toolname] and "ScatterFeatureRequirement" not in steps[toolname]["requirements"]:
 				steps[toolname]["requirements"]  += ["ScatterFeatureRequirement"]
-			else:
+			elif "requirements" not in steps[toolname]:
 				steps[toolname]["requirements"] = ["ScatterFeatureRequirement"]
+			else:
+				pass
 			for i in scatter:
 				steps[toolname]["scatter"] = []
 				steps[toolname]["scatter"] += [i]
@@ -102,17 +111,24 @@ class Workflow:
 			self.outputs[key] = value
 			self.output_names += [key]
 
-	def build(self):
+	def build(self, wd):
+		try:
+			self.validate()
+		finally:
+			self.build_cwl(wd)
+			self.create_cwl_inputs()
+
+	def build_cwl(self, wd):
 		# build will actually create the workflow file.
-		fname = "workflow.cwl"
 		steps = {"steps": self.steps}
 		inputs = {"inputs": self.inputs}
 		outputs = {"outputs": self.outputs}
-		with open(self.dirname+"/"+fname, "w") as wf:
+		with open(wd, "w") as wf:
 			yaml.dump(self.base, wf, default_flow_style=False)
 			yaml.dump(inputs, wf, default_flow_style=False) 
 			yaml.dump(outputs, wf, default_flow_style=False) 
 			yaml.dump(steps, wf, default_flow_style=False) 
+		return wf
 
 	def add_values(self, toolname, **kwargs):
 		'''
@@ -148,12 +164,10 @@ class Workflow:
 		'''
 		to be used only after build has been successfully ran
 		'''
-		print self.values
 		inputs = {}
 		with open(self.dirname+"/"+"inputs.yml", "w") as inp:
 			for i in self.input_names:
 				if i in self.values:
-					print(self.values[i])
 					inputs[i] = self.values[i]
 				else:
 					if self.inputs[i]["type"] == "File":
@@ -164,3 +178,37 @@ class Workflow:
 					else:
 						inputs[i] = "#PLACEHOLDER"
 			yaml.dump(inputs, inp, default_flow_style=False)
+
+	def load_cwl(self, fname):
+		"""Load and validate CWL file using cwltool
+		"""
+		# Fetching, preprocessing and validating cwl
+		(document_loader, workflowobj, uri) = fetch_document(fname)
+		(document_loader, _, processobj, metadata, uri) = \
+			validate_document(document_loader, workflowobj, uri)
+
+		return document_loader, processobj, metadata, uri
+
+	def validate(self):
+		"""Validate workflow object.
+		This method currently validates the workflow object with the use of
+		cwltool. It writes the workflow to a tmp CWL file, reads it, validates
+		it and removes the tmp file again. By default, the workflow is written
+		to file using absolute paths to the steps. Optionally, the steps can be
+		saved inline.
+		"""
+
+		# define tmpfile
+		(fd, tmpfile) = tempfile.mkstemp()
+		os.close(fd)
+		try:
+			# save workflow object to tmpfile,
+			# do not recursively call validate function
+			self.build_cwl(tmpfile)
+			# load workflow from tmpfile
+			document_loader, processobj, metadata, uri = self.load_cwl(tmpfile)
+		# except ValidationException:
+		# 	print "WARNING! CWL may fail"
+		finally:
+			# cleanup tmpfile
+			os.remove(tmpfile)

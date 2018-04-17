@@ -1,12 +1,10 @@
 from workflow import Workflow
+# already imported config in common?
 from config import *
-import argparse
-import sys
-
-
+import os
 
 class DNASeq(object):
-	cwl_dir = "../../cwl-local"
+	cwl_dir = os.path.abspath("../../cwl-local")
 	def __init__(self, name):
 		self.steps = [
 			self.picard_sam_to_fastq,
@@ -17,7 +15,8 @@ class DNASeq(object):
 			# self.gatk_indel_realigner,
 			# self.picard_merge_realigned,
 		]
-		self.workflow = Workflow("test")
+		self.workflow = Workflow(name)
+		self.readset = []
 		workflow = self.workflow
 		# must use absolute pathing # might need to make this obtained from config
 
@@ -26,18 +25,25 @@ class DNASeq(object):
 		# workflow.add_input("shared", picard={"type": ["string", "File"]})
 		workflow.add_values("shared", trimmomatic={"type": "File", "value": trimmomatic_jar})
 		workflow.add_values("shared", picard={"type": "File", "value": picard_jar})
+
+	def build(self):
+		workflow = self.workflow
 		for step in self.steps:
 			step()
-		workflow.build()
-		workflow.create_cwl_inputs()
+		wd = workflow.dirname+"/workflow.cwl"
+		workflow.build(wd)
 
 	def trimmomatic(self):
-		toolname = "trimmomatic"
-		# step 2
 		workflow = self.workflow
-		# from readset but hardcoded for now
-		input_forward = "../../pair1.fastq"
-		input_reverse = "../../pair2.fastq"
+		toolname = "trimmomatic"
+		# files for staging.
+
+		src = "{0}/trimmomatic.cwl".format(self.cwl_dir)
+		# add_to_run_folder returns the new path
+		path = workflow.add_to_run_folder(toolname,src)
+		# values for the inputs
+		input_forward = self.readset[0].fastq1
+		input_reverse = self.readset[0].fastq2
 		paired_end = True
 		trailing = int(config.param("trimmomatic", "trailing_min_quality"))
 		sliding_window = "4:15"
@@ -45,6 +51,9 @@ class DNASeq(object):
 		illumina_clip = config.param("trimmomatic", "illumina_clip_settings")
 		# example of what would be in a function
 		out = ["forward_paired", "reverse_paired", "forward_unpaired", "reverse_unpaired"]
+
+		# adding values to the inp obj/workflow
+		
 		workflow.add_values("trimmomatic", paired_end={"type": "boolean", "value":paired_end})
 		workflow.add_values("trimmomatic", illumina_clip={"type": "string", "value": illumina_clip})		
 		workflow.add_values("trimmomatic", sliding_window={"type": "string", "value": sliding_window})		
@@ -77,36 +86,52 @@ class DNASeq(object):
 		# now to add the outputs we want to keep.
 		workflow.add_outputs(trim_reverse_paired = {"outputSource": "trimmomatic/reverse_paired"})
 		workflow.add_outputs(trim_forward_paired = {"outputSource": "trimmomatic/forward_paired"})
+		# deal with the ram/core requirements
+		min_ram = config.param("trimmomatic", "ram")
+		min_core = config.param("trimmomatic", "threads")
+		reqs = { 
+				"class": "ResourceRequirement",
+				"ramMin": min_ram,
+				"coresMin": min_core
+			}
+		
 		# add the step to the workflow
-		src = "{0}/trimmomatic.cwl".format(self.cwl_dir)
-		path = workflow.add_to_run_folder(toolname,src)
-		workflow.add_step("trimmomatic",path, inp, out)
+		workflow.add_step("trimmomatic",path, inp, out,reqs=reqs)
 
 
 	def picard_sam_to_fastq(self):
-		toolname ="picard_sam_to_fastq"
-		# step 1
 		workflow = self.workflow
+		# setup
+		toolname ="picard_sam_to_fastq"
+		# add to staging folder
+		src = "{0}/picard_sam_to_fastq.cwl".format(self.cwl_dir)
+		print "\n\n\nSRC: {}\n\n\n".format(src)
+		path = workflow.add_to_run_folder(toolname,src)
+
+		#set output files
 		out = ["output_fastq", "output_fastq2"]
-		sam_file = "../../chrom20_low_cov.bam" # from readset
+		# default parameters for testing... should be obtained dynamically
+		sam_file = self.readset[0].bam # from readset... can only handle 1 readset at a time for now??
 		fq = "1.fq"
 		fq2 = "2.fq"
+		# adding values to the workflow
 		workflow.add_values("sam2fq", input={"type": "File", "value": sam_file})
-		# workflow.add_input("picard_sam2fq", input={"type": "File"})
 		workflow.add_values("sam2fq", fastq={"type": "string", "value": fq})
-		# workflow.add_input("picard_sam2fq", fastq={"type": "string"})
 		workflow.add_values("sam2fq", second_end_fastq={"type": "string", "value": fq2})
-		# workflow.add_input("picard_sam2fq", second_end_fastq={"type": "string"})
+		# match the inputs to their 'new' names
 		inp = {
 			"path_to_picard": "shared_picard",
 			"fastq": "sam2fq_fastq",
 			"second_end_fastq": "sam2fq_second_end_fastq",
 			"input": "sam2fq_input"
 		}
-		src = "{0}/picard_sam_to_fastq.cwl".format(self.cwl_dir)
-		path = workflow.add_to_run_folder(toolname,src)
-		workflow.add_step("sam2fq", path, inp, out)
-		# conditional statements to check for.
+		min_ram = config.param("picard_sam_to_fastq", "ram")
+		reqs = {
+				"class": "ResourceRequirement",
+				"ramMin": min_ram
+			}
+		
+		workflow.add_step("sam2fq", path, inp, out, reqs=reqs)
 
 
 # 	def bwa_mem(self):
@@ -213,27 +238,3 @@ class DNASeq(object):
 # 	# 	run = "{0}/picard_markdup.cwl".format(self.cwl_dir)
 
 
-# # import argparse
-# # parser = argparse.ArgumentParser(description='Create a cwl DNASeq Pipeline')
-# # parser.parse_args()
-# # parser.add_argument('--o')
-
-parser = argparse.ArgumentParser(description="This is the DNASeq pipeline created using CWL")
-# parsing the number of steps
-parser.add_argument("-s", action="store", dest="s")
-# parsing for the config file
-parser.add_argument("-c", action="store", dest="config_file")
-args = parser.parse_args(sys.argv[1:])
-
-try:
-	config_file = open(args.config_file)
-	r = config_file.readline()
-	print config.parse_files([config_file])
-except:
-	if args.config_file:
-		print "can't open config_file at: "	+ args.config_file
-
-test = DNASeq("test")
-
-
-# we can just make global variables to use as the starting point

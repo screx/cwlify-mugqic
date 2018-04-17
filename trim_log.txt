@@ -1,5 +1,0 @@
-TrimmomaticPE: Started with arguments:
- -phred33 /tmp/tmpf5j9EP/stgfbe70582-2337-4150-9a9d-b028dc8b4e06/pair1.fastq /tmp/tmpf5j9EP/stg87270d96-ae5e-4498-922a-7a2866c52b81/pair2.fastq pair1_f_pair.fastq pair1_f_unpair.fastq pair2_r_pair.fastq pair2_r_unpair.fastq TRAILING:3 SLIDINGWINDOW:4:15 MINLEN:36
-Multiple cores found: Using 4 threads
-Input Read Pairs: 2167380 Both Surviving: 1854894 (85.58%) Forward Only Surviving: 135964 (6.27%) Reverse Only Surviving: 164267 (7.58%) Dropped: 12255 (0.57%)
-TrimmomaticPE: Completed successfully
