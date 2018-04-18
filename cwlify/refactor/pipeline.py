@@ -9,6 +9,7 @@ class DNASeq(object):
 		self.steps = [
 			self.picard_sam_to_fastq,
 			self.trimmomatic,
+			# TODO
 			# self.bwa_mem,
 			# self.picard_sort,
 			# self.picard_merge,
@@ -30,7 +31,7 @@ class DNASeq(object):
 		workflow = self.workflow
 		for step in self.steps:
 			step()
-		wd = workflow.dirname+"/workflow.cwl"
+		wd = workflow.dirname
 		workflow.build(wd)
 
 	def trimmomatic(self):
