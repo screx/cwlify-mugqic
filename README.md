@@ -1,15 +1,7 @@
 # CWLIFY:
 
-This tool can be used to develop workflows programmatically and the input files that go with them.
+There are many independently functional groups that perform bioinformatics analysis that interoperability sometimes isn’t a concern. Making sure that a result can be reproduced by another group and that the same process can be repeated for other studies. CWL aims to separate the running of the workflow from its description in an attempt to standardize how workflows are shared and used.
 
-This tool won't be used to make everything correct automatically but simply to assemble.
+Modifying the GenAP pipeline itself to output CWL would require bad control flow [i.e. if pipeline.cwl -> create_cwl_steps()] to create CWL and input objects instead of shell scripts. Instead we create something that works parallel to the pipeline but mimics most of the functionality and writes out CWL. 
 
-A `step` will be used to interact with a cwl tool description. It will hold the information about the files location, along with the inputs directly related to that step.
 
-Steps will be added to a `Workflow` object. `inputs` and `outputs` also have to be added to the workflow manually.
-
-Linking. if an object in inputs is linked then the source is just the object, otherwise it has to be accessed by the ID first e.g. ID/input
-
-error checking. linking can only occur if it already exists in another steps output, or in inputs.
-
-for each tool compile the input values that are acquired for them.
