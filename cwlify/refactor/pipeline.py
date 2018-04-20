@@ -1,5 +1,4 @@
 from workflow import Workflow
-# already imported config in common?
 from config import *
 import os
 
@@ -42,6 +41,8 @@ class DNASeq(object):
 		src = "{0}/trimmomatic.cwl".format(self.cwl_dir)
 		# add_to_run_folder returns the new path
 		path = workflow.add_to_run_folder(toolname,src)
+
+
 		# values for the inputs
 		input_forward = self.readset[0].fastq1
 		input_reverse = self.readset[0].fastq2
@@ -51,10 +52,11 @@ class DNASeq(object):
 		min_len = int(config.param("trimmomatic", "min_length"))
 		illumina_clip = config.param("trimmomatic", "illumina_clip_settings")
 		# example of what would be in a function
+
+		# add the outputs of the CWL file as an array.
 		out = ["forward_paired", "reverse_paired", "forward_unpaired", "reverse_unpaired"]
 
 		# adding values to the inp obj/workflow
-		
 		workflow.add_values("trimmomatic", paired_end={"type": "boolean", "value":paired_end})
 		workflow.add_values("trimmomatic", illumina_clip={"type": "string", "value": illumina_clip})		
 		workflow.add_values("trimmomatic", sliding_window={"type": "string", "value": sliding_window})		
@@ -69,6 +71,8 @@ class DNASeq(object):
 			"min_len": "trimmomatic_min_len",
 			"trailing": "trimmomatic_trailing"	
 		}
+
+
 		# want to check if the previous step is available and in the steps, prob not the best way.
 		if hasattr(self, "picard_sam_to_fastq") and self.picard_sam_to_fastq in self.steps:
 			inp["input_forward"] = "sam2fq/output_fastq"
@@ -78,15 +82,12 @@ class DNASeq(object):
 			workflow.add_values("trimmomatic", input_reverse={"type": "File", "value": input_reverse})
 			inp["input_forward"] = "trimmomatic_input_forward"
 			inp["input_reverse"] = "trimmomatic_input_reverse"
-		# if self.config["trimmomatic"]["quality_offset"] == "64":
-		# 	workflow.add_input("trimmomatic", phred64={"type": "boolean"})
-		# 	trim_in["phred64"] = "trimmomatic_phred64"
-		# else:
-		# 	workflow.add_input("trimmomatic", phred33={"type":"boolean"})
-		# 	trim_in["phred33"] = "trimmomatic_phred33"
-		# now to add the outputs we want to keep.
+
+
+		# Any output we want the workflow to output at the end
 		workflow.add_outputs(trim_reverse_paired = {"outputSource": "trimmomatic/reverse_paired"})
 		workflow.add_outputs(trim_forward_paired = {"outputSource": "trimmomatic/forward_paired"})
+
 		# deal with the ram/core requirements
 		min_ram = config.param("trimmomatic", "ram")
 		min_core = config.param("trimmomatic", "threads")
@@ -97,7 +98,7 @@ class DNASeq(object):
 			}
 		
 		# add the step to the workflow
-		workflow.add_step("trimmomatic",path, inp, out,reqs=reqs)
+		workflow.add_step("trimmomatic", path, inp, out,reqs=reqs)
 
 
 	def picard_sam_to_fastq(self):

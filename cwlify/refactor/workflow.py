@@ -47,6 +47,9 @@ class Workflow:
 		"""
 		create_run_folder() creates a folder in the current directory named self.name
 		if a folder already exists, append a number to the dirname.
+
+		create_run_folder:
+			return: None
 		"""
 		base_dir = self.name
 		self.dirname = base_dir
@@ -278,8 +281,7 @@ class Workflow:
 			self.build_cwl(tmpfile)
 			# load workflow from tmpfile
 			document_loader, processobj, metadata, uri = self.load_cwl(tmpfile)
-		# except ValidationException:
-		# 	print "WARNING! CWL may fail"
+   
 		finally:
 			# cleanup tmpfile
 			os.remove(tmpfile)
