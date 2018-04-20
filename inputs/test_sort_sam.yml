@@ -1,7 +1,0 @@
-path_to_picard:
-  class: File
-  path:  picard.jar
-input_file: 
-  class: File
-  path: 1_f_pair_aligned.sam
-

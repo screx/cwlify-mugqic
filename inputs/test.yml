@@ -1,9 +1,0 @@
-path_to_picard:
-  class: File
-  path: picard.jar
-INPUT:
-  class: File
-  path: chrom20_low_cov.bam
-FASTQ: pair1.fastq
-
-SECOND_END_FASTQ: pair2.fastq
