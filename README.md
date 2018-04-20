@@ -56,21 +56,21 @@ pipeline.py
 * each method is a step in the pipeline
 * uses the workflow class to actually implement the DNASeq pipeline & creates the workflow
 * methods are layed out as followed
-![alt text](https://github.com/screx/cwlify-mugqic/images/image2.png "initialize necessary values")  
+![alt text](https://github.com/screx/cwlify-mugqic/blob/master/images/image2.png "initialize necessary values")  
 * specify the toolname and path to the actual CWL file we are trying to add and add it to the run directory using the add_to_run_folder() method
-![alt text](https://github.com/screx/cwlify-mugqic/images/image3.png "add values from readset")    
+![alt text](https://github.com/screx/cwlify-mugqic/blob/master/images/image3.png "add values from readset")    
 * Here we gather all the values that are needed from the readset/config file
-![alt text](https://github.com/screx/cwlify-mugqic/images/image4.png "add outputs as an array")     
+![alt text](https://github.com/screx/cwlify-mugqic/blob/master/images/image4.png "add outputs as an array")     
 * Add the outputs to the tool as an array of strings (from the names of the outputs in the tool description
-![alt text](https://github.com/screx/cwlify-mugqic/images/image5.png "add values to the workflow using add_values() method")  
+![alt text](https://github.com/screx/cwlify-mugqic/blob/master/images/image5.png "add values to the workflow using add_values() method")  
 * they are then added as inputs to the workflow using the add_values() method
-![alt text](https://github.com/screx/cwlify-mugqic/images/image6.png "dict of all inputs")    
+![alt text](https://github.com/screx/cwlify-mugqic/blob/master/images/image6.png "dict of all inputs")    
 * after all the inputs have been added create a dict where the key is the parameter name (found from the CWL file) and the value is the name of the input as added into cwl. if the value comes from another step it is of the form {toolname}/{parmeter_name}, otherwise it defaults to {toolname}\_{parametername}
-![alt text](https://github.com/screx/cwlify-mugqic/images/image7.png "extra control flow") 
+![alt text](https://github.com/screx/cwlify-mugqic/blob/master/images/image7.png "extra control flow") 
 * sometimes some extra control flow is needed to specify how to take arguments 
-![alt text](https://github.com/screx/cwlify-mugqic/images/image8.png "Adding requirements")  
+![alt text](https://github.com/screx/cwlify-mugqic/blob/master/images/image8.png "Adding requirements")  
 * Add any requirements to the system as needed
-![alt text](https://github.com/screx/cwlify-mugqic/images/image9.png "Use the add_step() method")    
+![alt text](https://github.com/screx/cwlify-mugqic/blob/master/images/image9.png "Use the add_step() method")    
 * add the step to the workflow using the add_step() method
 
 
@@ -92,11 +92,11 @@ config.py
 
 
 Running the command
-![alt text](https://github.com/screx/cwlify-mugqic/images/image10.png "The command to run")  
+![alt text](https://github.com/screx/cwlify-mugqic/blob/master/images/image10.png "The command to run")  
   
 Generates an inputs.yml and workflow.cwl file along with copying the relevant CWL tool descs into a new directory.
 
-![alt text](https://github.com/screx/cwlify-mugqic/images/image11.png "Tree structure of the new directory")  
+![alt text](https://github.com/screx/cwlify-mugqic/blob/master/images/image11.png "Tree structure of the new directory")  
 
 
   
