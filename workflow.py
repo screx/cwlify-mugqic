@@ -30,7 +30,7 @@ class Workflow:
 		and returns it as a dict
 
 		build_base:
-			return: None
+			return dict
 		"""
 		return {
 		"cwlVersion": self.cwl_version,
@@ -170,10 +170,10 @@ class Workflow:
 		try:
 			self.validate()
 		finally:
-			self.build_cwl(wd)
+			self.build_cwl(wd+"/workflow.cwl")
 			self.create_cwl_inputs(wd)
 
-	def build_cwl(self, wd):
+	def build_cwl(self, f):
 		"""
 		build_cwl(wd): creates the workflow file in the folder wd
 
@@ -185,8 +185,8 @@ class Workflow:
 		steps = {"steps": self.steps}
 		inputs = {"inputs": self.inputs}
 		outputs = {"outputs": self.outputs}
-		with open(wd + "/workflow.cwl", "w") as wf:
-			yaml.dump(self.base(), wf, default_flow_style=False)
+		with open(f, "w") as wf:
+			yaml.dump(self.build_base(), wf, default_flow_style=False)
 			yaml.dump(inputs, wf, default_flow_style=False) 
 			yaml.dump(outputs, wf, default_flow_style=False) 
 			yaml.dump(steps, wf, default_flow_style=False) 

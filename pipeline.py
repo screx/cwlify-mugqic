@@ -2,36 +2,42 @@ from workflow import Workflow
 from config import *
 import os
 
-class DNASeq(object):
-	cwl_dir = os.path.abspath("../../cwl-local")
+class Pipeline(object):
 	def __init__(self, name):
-		self.steps = [
-			self.picard_sam_to_fastq,
-			self.trimmomatic,
-			# TODO
-			# self.bwa_mem,
-			# self.picard_sort,
-			# self.picard_merge,
-			# self.gatk_indel_realigner,
-			# self.picard_merge_realigned,
-		]
-		self.workflow = Workflow(name)
-		self.readset = []
-		workflow = self.workflow
-		# must use absolute pathing # might need to make this obtained from config
-
-		trimmomatic_jar = config.param("executables", "trimmomatic")
-		picard_jar = config.param("executables", "picard")
-		# workflow.add_input("shared", picard={"type": ["string", "File"]})
-		workflow.add_values("shared", trimmomatic={"type": "File", "value": trimmomatic_jar})
-		workflow.add_values("shared", picard={"type": "File", "value": picard_jar})
-
+		super(Pipeline, self).__init__()
+		self.name = name
+	
 	def build(self):
 		workflow = self.workflow
 		for step in self.steps:
 			step()
 		wd = workflow.dirname
 		workflow.build(wd)
+
+class DNASeq(Pipeline):
+	cwl_dir = os.path.abspath("cwl-local/")
+
+	def __init__(self, name):
+		self.workflow = Workflow(name)
+		self.readset = []
+		workflow = self.workflow
+		# must use absolute pathing # might need to make this obtained from config
+		self.steps = [
+			self.picard_sam_to_fastq,
+			self.trimmomatic,
+			# TODO
+			# self.bwa_mem,
+			# self.picard_sort,
+			# self.picard_merge
+			# self.gatk_indel_realigner,
+			# self.picard_merge_realigned,
+			]
+		trimmomatic_jar = config.param("executables", "trimmomatic")
+		picard_jar = config.param("executables", "picard")
+		# workflow.add_input("shared", picard={"type": ["string", "File"]})
+		workflow.add_values("shared", trimmomatic={"type": "File", "value": trimmomatic_jar})
+		workflow.add_values("shared", picard={"type": "File", "value": picard_jar})
+
 
 	def trimmomatic(self):
 		workflow = self.workflow
