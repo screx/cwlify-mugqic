@@ -42,7 +42,7 @@ How CWLifying the pipeline will work
 > $ pip install -r requirements.txt
 
   
-![alt text](https://github.com/screx/cwlify-mugqic/images/image1.png "UML")
+![alt text](https://github.com/screx/cwlify-mugqic/blob/master/images/image1.png "UML")
 UML Diagram of the proof of concept
 
 
